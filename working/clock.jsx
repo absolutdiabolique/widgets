@@ -2,7 +2,7 @@
 // Place in Übersicht widgets directory
 
 const targetDate = new Date('2098-03-21T00:00:00');
-const birthDate = new Date('2012-06-05T00:00:00');
+const birthDate = new Date('2002-03-21T00:00:00');
 
 // Grid configuration
 const GRID_COLS = 10;
