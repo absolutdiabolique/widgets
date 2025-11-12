@@ -1,7 +1,6 @@
 // shortcuts.jsx
-// Place in Übersicht widgets directory
+// Übersicht widget — smooth draggable version (GPU transform + rAF)
 
-// Grid configuration (match clock.jsx)
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
 const GRID_WIDTH = 1512;
@@ -9,7 +8,7 @@ const GRID_HEIGHT = 948;
 const CELL_WIDTH = GRID_WIDTH / GRID_COLS;
 const CELL_HEIGHT = GRID_HEIGHT / GRID_ROWS;
 
-// Widget size: 1x1
+// Widget size
 const WIDGET_COLS = 1;
 const WIDGET_ROWS = 1;
 
@@ -17,11 +16,12 @@ const WIDGET_ROWS = 1;
 let dragging = false;
 let dragOffset = { x: 0, y: 0 };
 let dragPosition = { x: 0, y: CELL_HEIGHT * 3 };
+let element = null;
 
 export const command = () => "";
-export const refreshFrequency = () => (dragging ? false : 100);
+export const refreshFrequency = 10000;
 
-// Link pages
+// Pages of shortcuts
 const pages = [
   [
     { label: "Torn", url: "https://torn.com" },
@@ -41,10 +41,8 @@ export const render = () => {
 
   const containerStyle = {
     position: 'absolute',
-    top: `${dragPosition.y + CELL_HEIGHT * 0.1}px`,
-    left: `${dragPosition.x + CELL_WIDTH * 0.1}px`,
-    width: `${CELL_WIDTH * (WIDGET_COLS - 0.1)}px`,
-    height: `${CELL_HEIGHT * (WIDGET_ROWS - 0.1)}px`,
+    width: `${CELL_WIDTH * (WIDGET_COLS - 0.2)}px`,
+    height: `${CELL_HEIGHT * (WIDGET_ROWS - 0.2)}px`,
     borderRadius: '25px',
     background: 'rgba(0,0,0,0.4)',
     backdropFilter: 'blur(6px) saturate(160%)',
@@ -54,6 +52,9 @@ export const render = () => {
     overflow: 'hidden',
     cursor: dragging ? 'grabbing' : 'grab',
     userSelect: 'none',
+    willChange: 'transform',
+    transform: `translate(${dragPosition.x + CELL_WIDTH * 0.1}px, ${dragPosition.y + CELL_HEIGHT * 0.1}px)`,
+    transition: dragging ? 'none' : 'transform 0.2s ease-out',
   };
 
   const scrollContainerStyle = {
@@ -104,6 +105,11 @@ export const render = () => {
     transition: 'opacity 0.2s, transform 0.2s',
   };
 
+  const updateTransform = () => {
+    if (element)
+      element.style.transform = `translate(${dragPosition.x + CELL_WIDTH * 0.1}px, ${dragPosition.y + CELL_HEIGHT * 0.1}px)`;
+  };
+
   const onPointerDown = (e) => {
     if (e.target.tagName === "A") return;
     dragging = true;
@@ -116,13 +122,14 @@ export const render = () => {
     if (!dragging) return;
     dragPosition.x = e.clientX - dragOffset.x;
     dragPosition.y = e.clientY - dragOffset.y;
-    window.dispatchEvent(new Event("resize"));
+    requestAnimationFrame(updateTransform);
   };
 
   const onPointerUp = () => {
     if (dragging) {
       dragPosition.x = Math.round(dragPosition.x / CELL_WIDTH) * CELL_WIDTH;
       dragPosition.y = Math.round(dragPosition.y / CELL_HEIGHT) * CELL_HEIGHT;
+      updateTransform();
     }
     dragging = false;
     window.removeEventListener('pointermove', onPointerMove);
@@ -142,7 +149,11 @@ export const render = () => {
   };
 
   return (
-    <div style={containerStyle} onPointerDown={onPointerDown}>
+    <div
+      ref={(el) => (element = el)}
+      style={containerStyle}
+      onPointerDown={onPointerDown}
+    >
       <div style={scrollContainerStyle} onScroll={onScroll}>
         {pages.map((links, i) => (
           <div key={i} style={pageStyle}>
