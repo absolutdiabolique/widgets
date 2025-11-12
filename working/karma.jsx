@@ -17,7 +17,7 @@ let dragOffset = { x: 0, y: 0 };
 let dragPosition = { x: 0, y: CELL_HEIGHT * 4 };
 let element = null;
 
-const username = "United_Pace2109"; // <-- change this to the Reddit username you want
+const username = "reddit"; // <-- change this to the Reddit username you want
 const profile = `https://www.reddit.com/user/${username}/`;
 
 export const command = async () => {
