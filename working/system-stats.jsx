@@ -1,5 +1,5 @@
 // system-stats.jsx
-// Übersicht widget — smooth draggable version (GPU transform + rAF)
+// Übersicht widget — draggable + two-page vertical scroll with indicator dots (like shortcuts.jsx)
 
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
@@ -44,13 +44,14 @@ export const render = ({ output }) => {
 
   if (lines[2]) batt = lines[2].trim();
 
-  // Color coding helper
+  const parseNum = (val) => parseFloat(val.replace("%", "")) || 0;
+
   const colorize = (val) => {
     const num = parseFloat(val);
     if (isNaN(num)) return "white";
-    if (num < 50) return "#00FF7F"; // green
-    if (num < 80) return "#FFD700"; // yellow
-    return "#FF5555"; // red
+    if (num < 50) return "#00FF7F";
+    if (num < 80) return "#FFD700";
+    return "#FF5555";
   };
 
   const cpuColor = colorize(cpu);
@@ -75,20 +76,90 @@ export const render = ({ output }) => {
     border: '1px solid rgba(255,255,255,0.3)',
     color: 'white',
     fontFamily,
-    fontSize: '13px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    userSelect: 'none',
+    overflow: 'hidden',
     cursor: dragging ? 'grabbing' : 'grab',
     willChange: 'transform',
     transform: `translate(${dragPosition.x + CELL_WIDTH * 0.1}px, ${dragPosition.y + CELL_HEIGHT * 0.1}px)`,
     transition: dragging ? 'none' : 'transform 0.2s ease-out',
   };
 
+  const scrollContainerStyle = {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'scroll',
+    scrollSnapType: 'y mandatory',
+    scrollBehavior: 'smooth',
+    msOverflowStyle: 'none',
+    scrollbarWidth: 'none',
+  };
+
+  const pageStyle = {
+    flex: '0 0 100%',
+    scrollSnapAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    height: '100%',
+  };
+
   const statBox = { display: 'flex', flexDirection: 'column', alignItems: 'center' };
   const label = { opacity: 0.6, fontSize: '11px' };
   const value = (color) => ({ fontWeight: 'bold', fontSize: '14px', color });
+
+  const barContainer = {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    gap: '10px',
+  };
+
+  const barWrapper = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    width: '80%',
+  };
+
+  const barLabel = { fontSize: '12px', opacity: 0.6, marginBottom: '2px' };
+  const barBase = {
+    width: '100%',
+    height: '8px',
+    borderRadius: '6px',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    overflow: 'hidden',
+  };
+
+  const makeBarFill = (color, val) => ({
+    width: `${parseNum(val)}%`,
+    height: '100%',
+    backgroundColor: color,
+    borderRadius: '6px',
+    transition: 'width 0.4s ease',
+  });
+
+  const indicatorContainer = {
+    position: 'absolute',
+    right: '6px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    alignItems: 'center',
+  };
+
+  const dotBase = {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    transition: 'background-color 0.3s, transform 0.3s',
+  };
 
   const updateTransform = () => {
     if (element)
@@ -121,24 +192,73 @@ export const render = ({ output }) => {
     window.removeEventListener('pointerup', onPointerUp);
   };
 
+  const onScroll = (e) => {
+    const el = e.target;
+    const pageHeight = el.clientHeight;
+    const index = Math.round(el.scrollTop / pageHeight);
+    const dots = el.parentElement.querySelectorAll('.dot');
+    dots.forEach((d, i) => {
+      d.style.backgroundColor = i === index ? 'white' : 'rgba(255,255,255,0.3)';
+      d.style.transform = i === index ? 'scale(1.2)' : 'scale(1)';
+    });
+  };
+
   return (
     <div
       ref={(el) => (element = el)}
       style={containerStyle}
       onPointerDown={onPointerDown}
     >
-      <div style={statBox}>
-        <div style={label}>CPU</div>
-        <div style={value(cpuColor)}>{cpu}</div>
+      <div style={scrollContainerStyle} onScroll={onScroll}>
+        {/* Top Page — Text Stats */}
+        <div style={pageStyle}>
+          <div style={statBox}>
+            <div style={label}>CPU</div>
+            <div style={value(cpuColor)}>{cpu}</div>
+          </div>
+          <div style={statBox}>
+            <div style={label}>MEM</div>
+            <div style={value(memColor)}>{mem}</div>
+          </div>
+          <div style={statBox}>
+            <div style={label}>BAT</div>
+            <div style={value(battColor)}>{batt}</div>
+          </div>
+        </div>
+
+        {/* Bottom Page — Bars */}
+        <div style={pageStyle}>
+          <div style={barContainer}>
+            <div style={barWrapper}>
+              <div style={barLabel}>CPU</div>
+              <div style={barBase}>
+                <div style={makeBarFill(cpuColor, cpu)} />
+              </div>
+            </div>
+            <div style={barWrapper}>
+              <div style={barLabel}>MEM</div>
+              <div style={barBase}>
+                <div style={makeBarFill(memColor, mem)} />
+              </div>
+            </div>
+            <div style={barWrapper}>
+              <div style={barLabel}>BAT</div>
+              <div style={barBase}>
+                <div style={makeBarFill(battColor, batt)} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style={statBox}>
-        <div style={label}>MEM</div>
-        <div style={value(memColor)}>{mem}</div>
+
+      {/* Right-side scroll dots */}
+      <div style={indicatorContainer}>
+        {[0, 1].map((i) => (
+          <div key={i} className="dot" style={dotBase}></div>
+        ))}
       </div>
-      <div style={statBox}>
-        <div style={label}>BAT</div>
-        <div style={value(battColor)}>{batt}</div>
-      </div>
+
+      <style>{`div::-webkit-scrollbar { display: none; }`}</style>
     </div>
   );
 };
