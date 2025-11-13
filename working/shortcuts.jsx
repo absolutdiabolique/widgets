@@ -1,5 +1,5 @@
 // shortcuts.jsx
-// Übersicht widget — smooth draggable version (GPU transform + rAF)
+// Übersicht widget — smooth draggable version (GPU transform + rAF + favicons)
 
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
@@ -79,7 +79,7 @@ export const render = () => {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '8px',
   };
 
   const indicatorContainer = {
@@ -100,9 +100,21 @@ export const render = () => {
     transition: 'background-color 0.3s, transform 0.3s',
   };
 
+  const linkContainer = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  };
+
+  const faviconStyle = {
+    width: '14px',
+    height: '14px',
+    borderRadius: '3px',
+  };
+
   const linkStyle = {
     fontFamily,
-    fontSize: '13px',
+    fontSize: '12px',
     color: 'white',
     textDecoration: 'none',
     opacity: 0.8,
@@ -115,7 +127,7 @@ export const render = () => {
   };
 
   const onPointerDown = (e) => {
-    if (e.target.tagName === "A") return;
+    if (e.target.tagName === "A" || e.target.tagName === "IMG") return;
     dragging = true;
     dragOffset = { x: e.clientX - dragPosition.x, y: e.clientY - dragPosition.y };
     window.addEventListener('pointermove', onPointerMove);
@@ -161,23 +173,30 @@ export const render = () => {
       <div style={scrollContainerStyle} onScroll={onScroll}>
         {pages.map((links, i) => (
           <div key={i} style={pageStyle}>
-            {links.map((link) => (
-              <a
-                key={link.label}
-                href={link.url}
-                style={linkStyle}
-                onMouseEnter={(e) => {
-                  e.target.style.opacity = 1;
-                  e.target.style.transform = 'scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = 0.8;
-                  e.target.style.transform = 'scale(1.0)';
-                }}
-              >
-                {link.label}
-              </a>
-            ))}
+            {links.map((link) => {
+              const domain = new URL(link.url).origin;
+              const favicon = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+              return (
+                <a
+                  key={link.label}
+                  href={link.url}
+                  style={linkStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = 1;
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = 0.8;
+                    e.currentTarget.style.transform = 'scale(1.0)';
+                  }}
+                >
+                  <div style={linkContainer}>
+                    <img src={favicon} style={faviconStyle} />
+                    <span>{link.label}</span>
+                  </div>
+                </a>
+              );
+            })}
           </div>
         ))}
       </div>
