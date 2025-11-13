@@ -26,12 +26,16 @@ const pages = [
   [
     { label: "Torn", url: "https://torn.com" },
     { label: "PolyTrack", url: "https://kodub.com/apps/polytrack" },
-    { label: "ChatGPT", url: "https://chatgpt.com" },
   ],
   [
     { label: "YouTube", url: "https://youtube.com" },
     { label: "Discord", url: "https://discord.com" },
     { label: "Reddit", url: "https://reddit.com" },
+  ],
+  [
+    { label: "ChatGPT", url: "https://chatgpt.com" },
+    { label: "WolframAlpha", url: "https://wolframalpha.com" },
+    { label: "Sheets", url: "https://sheets.google.com" },
   ],
 ];
 
