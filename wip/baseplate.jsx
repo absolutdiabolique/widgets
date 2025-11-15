@@ -1,5 +1,5 @@
-// baseplate.jsx
-// Übersicht widget — baseplate
+# baseplate.jsx
+# baseplate for others
 
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
@@ -21,26 +21,9 @@ let element = null;
 export const command = () => "";
 export const refreshFrequency = 10000;
 
-// Pages of shortcuts
-const pages = [
-  [
-    { label: "Torn", url: "https://torn.com" },
-    { label: "PolyTrack", url: "https://kodub.com/apps/polytrack" },
-  ],
-  [
-    { label: "YouTube", url: "https://youtube.com" },
-    { label: "Discord", url: "https://discord.com" },
-    { label: "Reddit", url: "https://reddit.com" },
-  ],
-  [
-    { label: "ChatGPT", url: "https://chatgpt.com" },
-    { label: "WolframAlpha", url: "https://wolframalpha.com" },
-    { label: "Sheets", url: "https://sheets.google.com" },
-  ],
-];
-
 export const render = () => {
   const fontFamily = '"Courier New", monospace';
+  let currentPage = 0;
 
   const containerStyle = {
     position: 'absolute',
@@ -97,6 +80,6 @@ export const render = () => {
       style={containerStyle}
       onPointerDown={onPointerDown}
     >
-      </div>
+    </div>
   );
 };
