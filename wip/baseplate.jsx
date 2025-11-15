@@ -1,5 +1,5 @@
 // baseplate.jsx
-// Minimal draggable widget baseplate (GPU transform + rAF)
+// Übersicht widget — baseplate
 
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
@@ -8,18 +8,36 @@ const GRID_HEIGHT = 948;
 const CELL_WIDTH = GRID_WIDTH / GRID_COLS;
 const CELL_HEIGHT = GRID_HEIGHT / GRID_ROWS;
 
-// Widget size (default 1x1)
+// Widget size
 const WIDGET_COLS = 1;
 const WIDGET_ROWS = 1;
 
 // Drag state
 let dragging = false;
 let dragOffset = { x: 0, y: 0 };
-let dragPosition = { x: 0, y: CELL_HEIGHT * 4 };
+let dragPosition = { x: 0, y: CELL_HEIGHT * 5 };
 let element = null;
 
 export const command = () => "";
-export const refreshFrequency = False;
+export const refreshFrequency = 10000;
+
+// Pages of shortcuts
+const pages = [
+  [
+    { label: "Torn", url: "https://torn.com" },
+    { label: "PolyTrack", url: "https://kodub.com/apps/polytrack" },
+  ],
+  [
+    { label: "YouTube", url: "https://youtube.com" },
+    { label: "Discord", url: "https://discord.com" },
+    { label: "Reddit", url: "https://reddit.com" },
+  ],
+  [
+    { label: "ChatGPT", url: "https://chatgpt.com" },
+    { label: "WolframAlpha", url: "https://wolframalpha.com" },
+    { label: "Sheets", url: "https://sheets.google.com" },
+  ],
+];
 
 export const render = () => {
   const fontFamily = '"Courier New", monospace';
@@ -41,13 +59,14 @@ export const render = () => {
     transform: `translate(${dragPosition.x + CELL_WIDTH * 0.1}px, ${dragPosition.y + CELL_HEIGHT * 0.1}px)`,
     transition: dragging ? 'none' : 'transform 0.2s ease-out',
   };
+
   const updateTransform = () => {
     if (element)
       element.style.transform = `translate(${dragPosition.x + CELL_WIDTH * 0.1}px, ${dragPosition.y + CELL_HEIGHT * 0.1}px)`;
   };
 
   const onPointerDown = (e) => {
-    if (e.target.tagName === "A") return;
+    if (e.target.tagName === "A" || e.target.tagName === "IMG") return;
     dragging = true;
     dragOffset = { x: e.clientX - dragPosition.x, y: e.clientY - dragPosition.y };
     window.addEventListener('pointermove', onPointerMove);
@@ -77,6 +96,7 @@ export const render = () => {
       ref={(el) => (element = el)}
       style={containerStyle}
       onPointerDown={onPointerDown}
-    ></div>
+    >
+      </div>
   );
 };
