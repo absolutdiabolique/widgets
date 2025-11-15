@@ -1,5 +1,5 @@
-# baseplate.jsx
-# baseplate for others
+// baseplate.jsx
+// baseplate for others
 
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
